@@ -26,7 +26,7 @@ def dispatcher():
 
 @pytest.fixture
 def domain():
-    return dict()
+    return {}
 
 
 # @pytest.fixture

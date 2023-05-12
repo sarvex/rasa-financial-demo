@@ -119,10 +119,11 @@ class ProfileDB:
         # if the action server restarts in the middle of a conversation, the db will need to be repopulated outside of an action_session_start
         if not self.check_session_id_exists(session_id):
             self.populate_profile_db(session_id)
-        account = (
-            self.session.query(Account).filter(Account.session_id == session_id).first()
+        return (
+            self.session.query(Account)
+            .filter(Account.session_id == session_id)
+            .first()
         )
-        return account
 
     @staticmethod
     def get_account_number(account: Union[CreditCard, Account]):
@@ -158,8 +159,7 @@ class ProfileDB:
             .filter(RecipientRelationship.recipient_nickname == recipient_name.lower())
             .first()
         )
-        recipient_account = self.get_account(recipient.recipient_account_id)
-        return recipient_account
+        return self.get_account(recipient.recipient_account_id)
 
     def list_known_recipients(self, session_id: Text):
         """List recipient nicknames available to an account holder"""
@@ -347,19 +347,17 @@ class ProfileDB:
         self, general_account_names: Dict[Text, List[Text]]
     ):
         """Check whether tables have been populated with global values for vendors, recipients, and depositors"""
-        account_names = set(
-            [
-                name
-                for list_names in general_account_names.values()
-                for name in list_names
-            ]
-        )
+        account_names = {
+            name
+            for list_names in general_account_names.values()
+            for name in list_names
+        }
         existing_accounts = self.session.query(Account.account_holder_name).filter(
             Account.account_holder_name.in_(account_names)
         )
-        existing_account_names = set(
-            [account.account_holder_name for account in existing_accounts.all()]
-        )
+        existing_account_names = {
+            account.account_holder_name for account in existing_accounts.all()
+        }
         return account_names == existing_account_names
 
     def add_general_accounts(self, general_account_names: Dict[Text, List[Text]]):
@@ -420,8 +418,8 @@ class ProfileDB:
             )
 
             rand_dates = [
-                (start_date + timedelta(days=randrange(number_of_days)))
-                for x in range(0, len(rand_spend_amounts))
+                start_date + timedelta(days=randrange(number_of_days))
+                for _ in range(0, len(rand_spend_amounts))
             ]
 
             spend_transactions = [
@@ -449,8 +447,8 @@ class ProfileDB:
                 )
 
             rand_dates = [
-                (start_date + timedelta(days=randrange(number_of_days)))
-                for x in range(0, len(rand_deposit_amounts))
+                start_date + timedelta(days=randrange(number_of_days))
+                for _ in range(0, len(rand_deposit_amounts))
             ]
 
             deposit_transactions = [

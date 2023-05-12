@@ -590,8 +590,7 @@ class ActionShowBalance(Action):
         else:
             # show bank account balance
             account_balance = profile_db.get_account_balance(tracker.sender_id)
-            amount = tracker.get_slot("amount_transferred")
-            if amount:
+            if amount := tracker.get_slot("amount_transferred"):
                 amount = float(tracker.get_slot("amount_transferred"))
                 init_account_balance = account_balance + amount
                 dispatcher.utter_message(
@@ -606,15 +605,14 @@ class ActionShowBalance(Action):
                 )
 
         events = []
-        active_form_name = tracker.active_form.get("name")
-        if active_form_name:
-            # keep the tracker clean for the predictions with form switch stories
-            events.append(UserUtteranceReverted())
-            # trigger utter_ask_{form}_AA_CONTINUE_FORM, by making it the requested_slot
-            events.append(SlotSet("AA_CONTINUE_FORM", None))
-            # avoid that bot goes in listen mode after UserUtteranceReverted
-            events.append(FollowupAction(active_form_name))
-
+        if active_form_name := tracker.active_form.get("name"):
+            events.extend(
+                (
+                    UserUtteranceReverted(),
+                    SlotSet("AA_CONTINUE_FORM", None),
+                    FollowupAction(active_form_name),
+                )
+            )
         return events
 
 
@@ -639,15 +637,14 @@ class ActionShowRecipients(Action):
         )
 
         events = []
-        active_form_name = tracker.active_form.get("name")
-        if active_form_name:
-            # keep the tracker clean for the predictions with form switch stories
-            events.append(UserUtteranceReverted())
-            # trigger utter_ask_{form}_AA_CONTINUE_FORM, by making it the requested_slot
-            events.append(SlotSet("AA_CONTINUE_FORM", None))
-            # # avoid that bot goes in listen mode after UserUtteranceReverted
-            events.append(FollowupAction(active_form_name))
-
+        if active_form_name := tracker.active_form.get("name"):
+            events.extend(
+                (
+                    UserUtteranceReverted(),
+                    SlotSet("AA_CONTINUE_FORM", None),
+                    FollowupAction(active_form_name),
+                )
+            )
         return events
 
 
@@ -665,15 +662,14 @@ class ActionShowTransferCharge(Action):
         dispatcher.utter_message(response="utter_transfer_charge")
 
         events = []
-        active_form_name = tracker.active_form.get("name")
-        if active_form_name:
-            # keep the tracker clean for the predictions with form switch stories
-            events.append(UserUtteranceReverted())
-            # trigger utter_ask_{form}_AA_CONTINUE_FORM, by making it the requested_slot
-            events.append(SlotSet("AA_CONTINUE_FORM", None))
-            # # avoid that bot goes in listen mode after UserUtteranceReverted
-            events.append(FollowupAction(active_form_name))
-
+        if active_form_name := tracker.active_form.get("name"):
+            events.extend(
+                (
+                    UserUtteranceReverted(),
+                    SlotSet("AA_CONTINUE_FORM", None),
+                    FollowupAction(active_form_name),
+                )
+            )
         return events
 
 
@@ -763,18 +759,15 @@ class ActionAskTransactionSearchFormConfirm(Action):
         start_time_formatted = tracker.get_slot("start_time_formatted")
         end_time_formatted = tracker.get_slot("end_time_formatted")
 
-        if vendor_name:
-            vendor_name = f" with {vendor_name}"
-        else:
-            vendor_name = ""
-        if search_type == "spend":
-            text = (
-                f"Do you want to search for transactions{vendor_name} between "
-                f"{start_time_formatted} and {end_time_formatted}?"
-            )
-        elif search_type == "deposit":
+        vendor_name = f" with {vendor_name}" if vendor_name else ""
+        if search_type == "deposit":
             text = (
                 f"Do you want to search deposits made to your account between "
+                f"{start_time_formatted} and {end_time_formatted}?"
+            )
+        elif search_type == "spend":
+            text = (
+                f"Do you want to search for transactions{vendor_name} between "
                 f"{start_time_formatted} and {end_time_formatted}?"
             )
         buttons = [

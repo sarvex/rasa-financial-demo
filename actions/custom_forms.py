@@ -173,13 +173,12 @@ class CustomFormValidationAction(FormValidationAction, metaclass=abc.ABCMeta):
                     interrupt_form = True
 
         if interrupt_form:
-            # Sending LoopInterrupted will prevent rasa.core from asking for the slot
-            rvf_events.append(LoopInterrupted(is_interrupted=True))
-
-            # Sending ActionExecutionRejected will allow rasa.core to predict
-            # something else before continuing with the form
-            rvf_events.append(ActionExecutionRejected(action_name=self.form_name()))
-
+            rvf_events.extend(
+                (
+                    LoopInterrupted(is_interrupted=True),
+                    ActionExecutionRejected(action_name=self.form_name()),
+                )
+            )
             return rvf_events
 
         # Skip if validate_{slot} turned off the form by setting requested_slot to None
@@ -193,23 +192,15 @@ class CustomFormValidationAction(FormValidationAction, metaclass=abc.ABCMeta):
                 return rvf_events
 
         rvf = tracker.get_slot(RVF_SLOT)
-        if rvf:
-            rvf = int(rvf)
-        else:
-            # initialize counter to 0
-            rvf = 0
-
-        # check if validation of the requested_slot failed
-        validation_failed = True
-        for event in events:
-            if (
+        rvf = int(rvf) if rvf else 0
+        validation_failed = not any(
+            (
                 event["event"] == "slot"
                 and event["name"] == requested_slot
                 and event["value"]
-            ):
-                validation_failed = False
-                break
-
+            )
+            for event in events
+        )
         # keep track of repeated validation failures
         if validation_failed:
             rvf += 1
@@ -267,7 +258,7 @@ class CustomFormValidationAction(FormValidationAction, metaclass=abc.ABCMeta):
         )
 
         if explanation_output:
-            slots.update(explanation_output)
+            slots |= explanation_output
 
         return [SlotSet(slot, value) for slot, value in slots.items()]
 

@@ -1,4 +1,5 @@
 """Deletes all EKS test clusters prefixed with `financial-demo-`"""
+
 import sys
 import subprocess
 import json
@@ -33,7 +34,7 @@ clusters = [
 ]
 
 print(f"Found {len(clusters)} financial-demo test clusters")
-if len(clusters) > 0:
+if clusters:
     pprint.pprint(clusters)
 
 ###################################

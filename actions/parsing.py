@@ -68,8 +68,7 @@ def format_isotime_by_grain(isotime, grain=None):
         "year": "%Y",
     }
     timeformat = grain_format.get(grain, "%I:%M%p, %A %b %d, %Y")
-    time_formatted = value.strftime(timeformat)
-    return time_formatted
+    return value.strftime(timeformat)
 
 
 def parse_duckling_time(timeentity: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
@@ -80,20 +79,18 @@ def parse_duckling_time(timeentity: Dict[Text, Any]) -> Optional[Dict[Text, Any]
     if timeinfo.get("type") == "value":
         value = timeinfo.get("value")
         grain = timeinfo.get("grain")
-        parsedtime = {
+        return {
             "time": value,
             "time_formatted": format_isotime_by_grain(value, grain),
             "grain": grain,
         }
-        return parsedtime
 
 
 def get_entity_details(
     tracker: Tracker, entity_type: Text
 ) -> Optional[Dict[Text, Any]]:
     all_entities = tracker.latest_message.get("entities", [])
-    entities = [e for e in all_entities if e.get("entity") == entity_type]
-    if entities:
+    if entities := [e for e in all_entities if e.get("entity") == entity_type]:
         return entities[0]
 
 
